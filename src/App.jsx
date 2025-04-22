@@ -1,56 +1,3 @@
-
-
-
-// import React, { useEffect, useState } from 'react';
-// import TransactionForm from './components/TransactionForm';
-// import TransactionList from './components/TransactionList';
-// import ExpenseChart from './components/ExpenseChart';
-
-// export default function App() {
-//   const [transactions, setTransactions] = useState([]);
-
-//   useEffect(() => {
-//     fetch('/api/transactions')
-//       .then((res) => res.json())
-//       .then(setTransactions)
-//       .catch((err) => console.error('Error fetching transactions:', err));
-//   }, []);
-
-//   const addTransaction = async (tx) => {
-//     try {
-//       const res = await fetch('/api/transactions', {
-//         method: 'POST',
-//         headers: { 'Content-Type': 'application/json' },
-//         body: JSON.stringify(tx),
-//       });
-//       const data = await res.json();
-//       setTransactions([data, ...transactions]);
-//     } catch (err) {
-//       console.error('Error adding transaction:', err);
-//     }
-//   };
-
-//   const deleteTransaction = async (id) => {
-//     try {
-//       await fetch(`/api/transactions/${id}`, { method: 'DELETE' });
-//       setTransactions(transactions.filter((tx) => tx._id !== id));
-//     } catch (err) {
-//       console.error('Error deleting transaction:', err);
-//     }
-//   };
-
-//   return (
-//     <div className="max-w-xl mx-auto p-4">
-//       <h1 className="text-xl font-bold mb-4">Personal Finance Visualizer</h1>
-//       <TransactionForm onSubmit={addTransaction} />
-//       <ExpenseChart transactions={transactions} />
-//       <TransactionList transactions={transactions} onDelete={deleteTransaction} />
-//     </div>
-//   );
-// }
-
-
-
 import React, { useState, useEffect } from "react";
 import { getTransactions, addTransaction, updateTransaction, deleteTransaction } from "./utils/api";
 import TransactionForm from "./components/TransactionForm";
@@ -68,11 +15,22 @@ const getMonthName = (monthIndex) => {
 function App() {
   const [transactions, setTransactions] = useState([]);
   const [editing, setEditing] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchTransactions = async () => {
+      setIsLoading(true);
       const data = await getTransactions();
-      setTransactions(data);
+      
+      // Check if data is valid (not an error object)
+      if (!data.error) {
+        setTransactions(data);
+      } else {
+        setError(data.message);
+        setTransactions([]); // Initialize with empty array on error
+      }
+      setIsLoading(false);
     };
     fetchTransactions();
   }, []);
@@ -85,52 +43,86 @@ function App() {
     }
     setEditing(null);
     const updatedData = await getTransactions();
-    setTransactions(updatedData);
+    if (!updatedData.error) {
+      setTransactions(updatedData);
+    }
   };
 
   const handleDeleteTransaction = async (id) => {
     await deleteTransaction(id);
     const updatedData = await getTransactions();
-    setTransactions(updatedData);
+    if (!updatedData.error) {
+      setTransactions(updatedData);
+    }
   };
 
   const handleEditTransaction = (transaction) => {
     setEditing(transaction);
   };
 
-  // Aggregating transactions per month for chart
-  const chartData = transactions.reduce((acc, { amount, date }) => {
-    const month = new Date(date).getMonth(); // Get month index (0 for January, 11 for December)
-    if (!acc[month]) acc[month] = { month, total: 0 };
-    acc[month].total += amount;
-    return acc;
-  }, []);
+  // Safely generate chart data - using a safer approach
+  const prepareChartData = () => {
+    // Make sure transactions is an array before using reduce
+    if (!Array.isArray(transactions) || transactions.length === 0) {
+      return [];
+    }
+    
+    // Safely aggregate transactions by month
+    const monthlyData = {};
+    
+    transactions.forEach(transaction => {
+      if (transaction && transaction.date && transaction.amount !== undefined) {
+        const month = new Date(transaction.date).getMonth();
+        const amount = parseFloat(transaction.amount) || 0;
+        
+        if (!monthlyData[month]) {
+          monthlyData[month] = { month, total: 0 };
+        }
+        
+        monthlyData[month].total += amount;
+      }
+    });
+    
+    // Convert object to array and add month names
+    return Object.values(monthlyData).map(data => ({
+      ...data,
+      month: getMonthName(data.month)
+    }));
+  };
 
-  // Convert month index to month name
-  const formattedChartData = Object.values(chartData).map((data) => ({
-    ...data,
-    month: getMonthName(data.month), // Map month index to name (e.g., "Jan", "Feb")
-  }));
+  // Generate chart data
+  const formattedChartData = prepareChartData();
 
   return (
     <div>
       <h1>Personal Finance Tracker</h1>
-      <TransactionForm onSubmit={handleAddEditTransaction} transaction={editing} />
-      <TransactionList
-        transactions={transactions}
-        onDelete={handleDeleteTransaction}
-        onEdit={handleEditTransaction}
-      />
-      <ResponsiveContainer width="100%" height={300}>
-        <BarChart data={formattedChartData}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="month" />
-          <YAxis />
-          <Tooltip />
-          <Legend />
-          <Bar dataKey="total" fill="#8884d8" />
-        </BarChart>
-      </ResponsiveContainer>
+      {error && <div className="error-message">{error}</div>}
+      {isLoading ? (
+        <div>Loading transactions...</div>
+      ) : (
+        <>
+          <TransactionForm onSubmit={handleAddEditTransaction} transaction={editing} />
+          <TransactionList
+            transactions={transactions}
+            onDelete={handleDeleteTransaction}
+            onEdit={handleEditTransaction}
+          />
+          {formattedChartData.length > 0 ? (
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={formattedChartData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="total" fill="#8884d8" />
+              </BarChart>
+            </ResponsiveContainer>
+          ) : (
+            <p>No transaction data to display in chart</p>
+          )}
+        </>
+      )}
     </div>
   );
 }
