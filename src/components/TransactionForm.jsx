@@ -1,32 +1,4 @@
 
-
-// import React, { useState } from 'react';
-
-// export default function TransactionForm({ onSubmit }) {
-//   const [amount, setAmount] = useState('');
-//   const [date, setDate] = useState('');
-//   const [description, setDescription] = useState('');
-
-//   const handleSubmit = (e) => {
-//     e.preventDefault();
-//     if (!amount || !date || !description) return alert('All fields are required');
-//     onSubmit({ amount: parseFloat(amount), date, description });
-//     setAmount('');
-//     setDate('');
-//     setDescription('');
-//   };
-
-//   return (
-//     <form onSubmit={handleSubmit} className="space-y-2 mb-4">
-//       <input className="input" placeholder="Amount" type="number" value={amount} onChange={(e) => setAmount(e.target.value)} />
-//       <input className="input" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
-//       <input className="input" placeholder="Description" value={description} onChange={(e) => setDescription(e.target.value)} />
-//       <button className="btn" type="submit">Add</button>
-//     </form>
-//   );
-// }
-
-
 import React, { useState, useEffect } from "react";
 import { Input, Button, Space, DatePicker, Select } from "antd";
 import dayjs from "dayjs";
