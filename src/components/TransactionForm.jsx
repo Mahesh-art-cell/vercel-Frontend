@@ -1,110 +1,7 @@
 
-// import React, { useState, useEffect } from "react";
-// import { Input, Button, Space, DatePicker, Select } from "antd";
-// import dayjs from "dayjs";
-
-// const TransactionForm = ({ onSubmit, transaction, categories = [] }) => {
-//   const [formData, setFormData] = useState({
-//     amount: "",
-//     description: "",
-//     date: dayjs().format("YYYY-MM-DD"),
-//     category: "",
-//   });
-
-//   useEffect(() => {
-//     if (transaction) {
-//       setFormData({
-//         amount: transaction.amount,
-//         description: transaction.description,
-//         date: transaction.date,
-//         category: transaction.category || "",
-//       });
-//     }
-//   }, [transaction]);
-
-//   const handleChange = (e) => {
-//     const { name, value } = e.target;
-//     setFormData((prev) => ({
-//       ...prev,
-//       [name]: value,
-//     }));
-//   };
-
-//   const handleDateChange = (date, dateString) => {
-//     setFormData((prev) => ({
-//       ...prev,
-//       date: dateString,
-//     }));
-//   };
-
-//   const handleCategoryChange = (value) => {
-//     setFormData((prev) => ({
-//       ...prev,
-//       category: value,
-//     }));
-//   };
-
-//   const handleSubmit = (e) => {
-//     e.preventDefault();
-//     onSubmit(formData);
-//     setFormData({
-//       amount: "",
-//       description: "",
-//       date: dayjs().format("YYYY-MM-DD"),
-//       category: "",
-//     });
-//   };
-
-//   return (
-//     <form onSubmit={handleSubmit} style={{ marginBottom: "20px" }}>
-//       <Space direction="vertical" style={{ width: "100%" }}>
-//         <Input
-//           type="number"
-//           placeholder="Amount"
-//           name="amount"
-//           value={formData.amount}
-//           onChange={handleChange}
-//         />
-//         <Input
-//           placeholder="Description"
-//           name="description"
-//           value={formData.description}
-//           onChange={handleChange}
-//         />
-//         <DatePicker
-//           value={dayjs(formData.date)}
-//           onChange={handleDateChange}
-//           style={{ width: "100%" }}
-//         />
-//         <Select
-//           placeholder="Select Category"
-//           value={formData.category}
-//           onChange={handleCategoryChange}
-//           style={{ width: "100%" }}
-//         >
-//           {(categories || []).map((cat) => (
-//             <Select.Option key={cat._id} value={cat.name}>
-//               {cat.name}
-//             </Select.Option>
-//           ))}
-//         </Select>
-//         <Button type="primary" htmlType="submit">
-//           {transaction ? "Update" : "Add"} Transaction
-//         </Button>
-//       </Space>
-//     </form>
-//   );
-// };
-
-// export default TransactionForm;
-
-
-
 import React, { useState, useEffect } from "react";
 import { Input, Button, Space, DatePicker, Select } from "antd";
 import dayjs from "dayjs";
-
-const { Option } = Select;
 
 const TransactionForm = ({ onSubmit, transaction, categories = [] }) => {
   const [formData, setFormData] = useState({
@@ -119,21 +16,11 @@ const TransactionForm = ({ onSubmit, transaction, categories = [] }) => {
       setFormData({
         amount: transaction.amount,
         description: transaction.description,
-        date: dayjs(transaction.date).format("YYYY-MM-DD"),
+        date: transaction.date,
         category: transaction.category || "",
       });
     }
   }, [transaction]);
-
-  // Set default category if available
-  useEffect(() => {
-    if (!formData.category && categories.length > 0) {
-      setFormData((prev) => ({
-        ...prev,
-        category: categories[0].name,
-      }));
-    }
-  }, [categories]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -164,7 +51,7 @@ const TransactionForm = ({ onSubmit, transaction, categories = [] }) => {
       amount: "",
       description: "",
       date: dayjs().format("YYYY-MM-DD"),
-      category: categories.length > 0 ? categories[0].name : "",
+      category: "",
     });
   };
 
@@ -189,19 +76,18 @@ const TransactionForm = ({ onSubmit, transaction, categories = [] }) => {
           onChange={handleDateChange}
           style={{ width: "100%" }}
         />
-        <Select
+        {/* <Select
           placeholder="Select Category"
-          value={formData.category || undefined}
+          value={formData.category}
           onChange={handleCategoryChange}
           style={{ width: "100%" }}
-          disabled={categories.length === 0}
         >
-          {categories.map((cat) => (
-            <Option key={cat._id} value={cat.name}>
+          {(categories || []).map((cat) => (
+            <Select.Option key={cat._id} value={cat.name}>
               {cat.name}
-            </Option>
+            </Select.Option>
           ))}
-        </Select>
+        </Select> */}
         <Button type="primary" htmlType="submit">
           {transaction ? "Update" : "Add"} Transaction
         </Button>
@@ -211,4 +97,125 @@ const TransactionForm = ({ onSubmit, transaction, categories = [] }) => {
 };
 
 export default TransactionForm;
+
+
+
+// import React, { useState, useEffect } from "react";
+// import { Input, Button, Space, DatePicker, Select } from "antd";
+// import dayjs from "dayjs";
+
+// const { Option } = Select;
+
+// const TransactionForm = ({ onSubmit, transaction, categories = [] }) => {
+//   const [formData, setFormData] = useState({
+//     amount: "",
+//     description: "",
+//     date: dayjs(), // store as dayjs object
+//     category: undefined,
+//   });
+
+//   useEffect(() => {
+//     if (transaction) {
+//       setFormData({
+//         amount: transaction.amount || "",
+//         description: transaction.description || "",
+//         date: transaction.date ? dayjs(transaction.date) : dayjs(),
+//         category: transaction.category || undefined,
+//       });
+//     }
+//   }, [transaction]);
+
+//   useEffect(() => {
+//     // Auto-select first category if none selected
+//     if (!formData.category && categories.length > 0) {
+//       setFormData((prev) => ({
+//         ...prev,
+//         category: categories[0].name,
+//       }));
+//     }
+//   }, [categories]);
+
+//   const handleChange = (e) => {
+//     const { name, value } = e.target;
+//     setFormData((prev) => ({
+//       ...prev,
+//       [name]: value,
+//     }));
+//   };
+
+//   const handleDateChange = (date) => {
+//     setFormData((prev) => ({
+//       ...prev,
+//       date: date,
+//     }));
+//   };
+
+//   const handleCategoryChange = (value) => {
+//     setFormData((prev) => ({
+//       ...prev,
+//       category: value,
+//     }));
+//   };
+
+//   const handleSubmit = (e) => {
+//     e.preventDefault();
+
+//     const dataToSubmit = {
+//       ...formData,
+//       date: formData.date.format("YYYY-MM-DD"),
+//     };
+
+//     onSubmit(dataToSubmit);
+
+//     setFormData({
+//       amount: "",
+//       description: "",
+//       date: dayjs(),
+//       category: categories.length > 0 ? categories[0].name : undefined,
+//     });
+//   };
+
+//   return (
+//     <form onSubmit={handleSubmit} style={{ marginBottom: "20px" }}>
+//       <Space direction="vertical" style={{ width: "100%" }}>
+//         <Input
+//           type="number"
+//           placeholder="Amount"
+//           name="amount"
+//           value={formData.amount}
+//           onChange={handleChange}
+//         />
+//         <Input
+//           placeholder="Description"
+//           name="description"
+//           value={formData.description}
+//           onChange={handleChange}
+//         />
+//         <DatePicker
+//           value={formData.date}
+//           onChange={handleDateChange}
+//           style={{ width: "100%" }}
+//         />
+//         {/* <Select
+//           placeholder="Select Category"
+//           value={formData.category}
+//           onChange={handleCategoryChange}
+//           style={{ width: "100%" }}
+//           disabled={categories.length === 0}
+//         >
+//           {categories.map((cat) => (
+//             <Option key={cat._id} value={cat.name}>
+//               {cat.name}
+//             </Option>
+//           ))}
+//         </Select> */}
+//         <Button type="primary" htmlType="submit">
+//           {transaction ? "Update" : "Add"} Transaction
+//         </Button>
+//       </Space>
+//     </form>
+//   );
+// };
+
+// export default TransactionForm;
 
